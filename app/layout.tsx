@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import type { ReactNode } from "react";
+import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 
 const sans = Geist({
@@ -33,6 +34,7 @@ const RootLayout = ({ children }: RootLayoutProps) => (
     <body className={cn(sans.variable, mono.variable, "antialiased")}>
       {children}
       <Analytics />
+      <Toaster />
     </body>
   </html>
 );
