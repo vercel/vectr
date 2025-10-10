@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +32,7 @@ const RootLayout = ({ children }: RootLayoutProps) => (
   <html lang="en">
     <body className={cn(sans.variable, mono.variable, "antialiased")}>
       {children}
+      <Analytics />
     </body>
   </html>
 );
