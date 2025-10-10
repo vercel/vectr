@@ -1,6 +1,6 @@
 "use client";
 
-import { put } from "@vercel/blob";
+import { upload } from "@vercel/blob/client";
 import { FileIcon, ImageIcon, UploadIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import DropzoneComponent from "react-dropzone";
@@ -17,7 +17,10 @@ export const Dropzone = ({ children }: DropzoneProps) => {
   const handleDrop = async (acceptedFiles: File[]) => {
     try {
       for (const file of acceptedFiles) {
-        const blob = await put(file.name, file, { access: "public" });
+        const blob = await upload(file.name, file, {
+          access: "public",
+          handleUploadUrl: "/api/upload",
+        });
 
         addImage(blob);
       }
