@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
-    "start": "next start"
+    "check": "npx ultracite@latest check",
+    "format": "npx ultracite@latest format"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
