@@ -2,6 +2,9 @@ import { Search } from "@upstash/search";
 import { type HandleUploadBody, handleUpload } from "@vercel/blob/client";
 import { generateText, type ImagePart } from "ai";
 import { NextResponse } from "next/server";
+import { eq } from "drizzle-orm";
+import { database } from "@/lib/database";
+import { image } from "@/lib/schema";
 
 const upstash = Search.fromEnv();
 
@@ -20,18 +23,16 @@ export async function POST(request: Request): Promise<NextResponse> {
         console.log("blob upload completed", blob, tokenPayload);
 
         try {
-          const record = await database.image.create({
-            data: {
+          const [record] = await database
+            .insert(image)
+            .values({
               downloadUrl: blob.downloadUrl,
               url: blob.url,
               mediaType: blob.contentType,
-            },
-            select: {
-              id: true,
-            },
-          });
+            })
+            .returning({ id: image.id });
 
-          const image: ImagePart = {
+          const imagePart: ImagePart = {
             type: "image",
             image: blob.url,
             mediaType: blob.contentType,
@@ -43,15 +44,15 @@ export async function POST(request: Request): Promise<NextResponse> {
             messages: [
               {
                 role: "user",
-                content: [image],
+                content: [imagePart],
               },
             ],
           });
 
-          await database.image.update({
-            where: { id: record.id },
-            data: { text },
-          });
+          await database
+            .update(image)
+            .set({ text })
+            .where(eq(image.id, record.id));
 
           const index = upstash.index("images");
 
