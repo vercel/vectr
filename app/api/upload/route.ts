@@ -4,7 +4,8 @@ import { FatalError } from "@vercel/workflow";
 import { NextResponse } from "next/server";
 import { uploadImage } from "./upload-image";
 import { generateDescription } from "./generate-description";
-import { saveImage } from "./save-image";
+import { insertImage } from "./insert-image";
+import { indexImage } from "./index-image";
 
 export async function POST(request: Request): Promise<NextResponse> {
   "use workflow";
@@ -49,23 +50,28 @@ export async function POST(request: Request): Promise<NextResponse> {
     });
 
     // Step 1: Upload image to Blob Storage
-    console.log("[WORKFLOW] Step 1/3: Uploading image");
+    console.log("[WORKFLOW] Step 1/4: Uploading image");
     const blob = await uploadImage(file);
     console.log(
-      `[WORKFLOW] Step 1/3 complete. Uploaded to ${blob.downloadUrl}`
+      `[WORKFLOW] Step 1/4 complete. Uploaded to ${blob.downloadUrl}`
     );
 
     // Step 2: Generate description using AI
-    console.log("[WORKFLOW] Step 2/3: Generating description");
+    console.log("[WORKFLOW] Step 2/4: Generating description");
     const text = await generateDescription(blob);
     console.log(
-      `[WORKFLOW] Step 2/3 complete. Generated ${text.length} characters`
+      `[WORKFLOW] Step 2/4 complete. Generated ${text.length} characters`
     );
 
-    // Step 3: Save to database and index in search
-    console.log("[WORKFLOW] Step 3/3: Saving to database and search");
-    const record = await saveImage(blob, text);
-    console.log(`[WORKFLOW] Step 3/3 complete. Image ID: ${record.id}`);
+    // Step 3: Insert image into database
+    console.log("[WORKFLOW] Step 3/4: Inserting image into database");
+    const record = await insertImage(blob, text);
+    console.log(`[WORKFLOW] Step 3/4 complete. Image ID: ${record.id}`);
+
+    // Step 4: Index in search
+    console.log("[WORKFLOW] Step 4/4: Indexing in search");
+    await indexImage(record.id, text);
+    console.log(`[WORKFLOW] Step 4/4 complete. Image indexed successfully`);
 
     const workflowDuration = Date.now() - workflowStartTime;
     console.log(
