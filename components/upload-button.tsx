@@ -1,7 +1,7 @@
 "use client";
 
 import { ImageUpIcon, XIcon } from "lucide-react";
-import { type ChangeEventHandler, useRef } from "react";
+import { type ChangeEventHandler, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -11,6 +11,9 @@ export const UploadButton = () => {
   const { addImage } = useUploadedImages();
   const inputRef = useRef<HTMLInputElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const isDemo =
+    typeof window !== "undefined" && window.location.hostname === "vectr.store";
 
   const cancelUpload = () => {
     if (abortControllerRef.current) {
@@ -24,6 +27,11 @@ export const UploadButton = () => {
     const files = Array.from(event.target.files || []);
 
     if (files.length === 0) {
+      return;
+    }
+
+    if (isDemo) {
+      toast.error("Uploads are disabled in demo mode");
       return;
     }
 
@@ -42,6 +50,8 @@ export const UploadButton = () => {
 
     // Create a new AbortController for this upload batch
     abortControllerRef.current = new AbortController();
+
+    setIsUploading(true);
 
     // Create temporary blobs for all files immediately for optimistic UI
     const tempBlobs = files.map((file) => {
@@ -210,6 +220,8 @@ export const UploadButton = () => {
       if (inputRef.current) {
         inputRef.current.value = "";
       }
+
+      setIsUploading(false);
     }
   };
 
@@ -226,6 +238,7 @@ export const UploadButton = () => {
       />
       <Button
         className="shrink-0 rounded-full"
+        disabled={isUploading || isDemo}
         onClick={() => inputRef.current?.click()}
         size="icon"
         type="button"
