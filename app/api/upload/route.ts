@@ -2,10 +2,9 @@
 
 import { FatalError } from "@vercel/workflow";
 import { NextResponse } from "next/server";
-import { uploadImage } from "./upload-image";
 import { generateDescription } from "./generate-description";
-import { insertImage } from "./insert-image";
 import { indexImage } from "./index-image";
+import { uploadImage } from "./upload-image";
 
 export async function POST(request: Request): Promise<NextResponse> {
   "use workflow";
@@ -43,35 +42,30 @@ export async function POST(request: Request): Promise<NextResponse> {
     console.log(
       `[WORKFLOW] Starting image processing workflow for ${file.name}`
     );
-    console.log(`[WORKFLOW] File details:`, {
+    console.log("[WORKFLOW] File details:", {
       name: file.name,
       type: file.type,
       size: file.size,
     });
 
     // Step 1: Upload image to Blob Storage
-    console.log("[WORKFLOW] Step 1/4: Uploading image");
+    console.log("[WORKFLOW] Step 1/3: Uploading image");
     const blob = await uploadImage(file);
     console.log(
-      `[WORKFLOW] Step 1/4 complete. Uploaded to ${blob.downloadUrl}`
+      `[WORKFLOW] Step 1/3 complete. Uploaded to ${blob.downloadUrl}`
     );
 
     // Step 2: Generate description using AI
-    console.log("[WORKFLOW] Step 2/4: Generating description");
+    console.log("[WORKFLOW] Step 2/3: Generating description");
     const text = await generateDescription(blob);
     console.log(
-      `[WORKFLOW] Step 2/4 complete. Generated ${text.length} characters`
+      `[WORKFLOW] Step 2/3 complete. Generated ${text.length} characters`
     );
 
-    // Step 3: Insert image into database
-    console.log("[WORKFLOW] Step 3/4: Inserting image into database");
-    const record = await insertImage(blob, text);
-    console.log(`[WORKFLOW] Step 3/4 complete. Image ID: ${record.id}`);
-
-    // Step 4: Index in search
-    console.log("[WORKFLOW] Step 4/4: Indexing in search");
-    await indexImage(record.id, text);
-    console.log(`[WORKFLOW] Step 4/4 complete. Image indexed successfully`);
+    // Step 3: Index in search with metadata
+    console.log("[WORKFLOW] Step 3/3: Indexing in search");
+    await indexImage(blob, text);
+    console.log("[WORKFLOW] Step 3/3 complete. Image indexed successfully");
 
     const workflowDuration = Date.now() - workflowStartTime;
     console.log(
@@ -80,7 +74,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     return NextResponse.json({
       success: true,
-      imageId: record.id,
+      pathname: blob.pathname,
       imageUrl: blob.url,
       processingTime: workflowDuration,
     });

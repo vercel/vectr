@@ -27,12 +27,6 @@ export const DeployButton = () => {
       {
         type: "integration",
         protocol: "storage",
-        productSlug: "neon",
-        integrationSlug: "neon",
-      },
-      {
-        type: "integration",
-        protocol: "storage",
         productSlug: "upstash-search",
         integrationSlug: "upstash",
       },

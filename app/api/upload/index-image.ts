@@ -1,25 +1,33 @@
+/** biome-ignore-all lint/suspicious/noConsole: "Handy for debugging" */
+
 import { Search } from "@upstash/search";
-import {
-  FatalError,
-  RetryableError,
-  getStepMetadata,
-} from "@vercel/workflow";
+import type { PutBlobResult } from "@vercel/blob";
+import { FatalError, getStepMetadata, RetryableError } from "@vercel/workflow";
 
 const upstash = Search.fromEnv();
 
-export async function indexImage(id: string, text: string) {
+export async function indexImage(blob: PutBlobResult, text: string) {
   "use step";
 
   const { attempt, stepStartedAt, stepId } = getStepMetadata();
 
-  console.log(`[${stepId}] Indexing image (attempt ${attempt})...`, id);
+  console.log(
+    `[${stepId}] Indexing image (attempt ${attempt})...`,
+    blob.downloadUrl
+  );
 
   try {
     const index = upstash.index("images");
-    const result = await index.upsert({ id, content: { text } });
+
+    // Store blob metadata in Upstash along with the description
+    const result = await index.upsert({
+      id: blob.pathname,
+      content: { text },
+      metadata: { ...blob },
+    });
 
     console.log(
-      `[${stepId}] Successfully indexed image ${id} at ${stepStartedAt.toISOString()}`
+      `[${stepId}] Successfully indexed image at ${stepStartedAt.toISOString()}`
     );
 
     return result;
@@ -51,9 +59,7 @@ export async function indexImage(id: string, text: string) {
 
     // Check for invalid data (fatal)
     if (message.includes("invalid") || message.includes("400")) {
-      throw new FatalError(
-        `[${stepId}] Invalid data for indexing: ${message}`
-      );
+      throw new FatalError(`[${stepId}] Invalid data for indexing: ${message}`);
     }
 
     // After 5 attempts for search indexing, give up
