@@ -2,9 +2,15 @@
 
 import { FatalError } from "@vercel/workflow";
 import { NextResponse } from "next/server";
-import { processImage } from "./process-blob";
+import { uploadImage } from "./upload-image";
+import { generateDescription } from "./generate-description";
+import { saveImage } from "./save-image";
 
 export async function POST(request: Request): Promise<NextResponse> {
+  "use workflow";
+
+  const workflowStartTime = Date.now();
+
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
@@ -33,22 +39,54 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
 
-    console.log("[API] Received file upload", {
+    console.log(
+      `[WORKFLOW] Starting image processing workflow for ${file.name}`
+    );
+    console.log(`[WORKFLOW] File details:`, {
       name: file.name,
       type: file.type,
       size: file.size,
     });
 
-    const result = await processImage(file);
+    // Step 1: Upload image to Blob Storage
+    console.log("[WORKFLOW] Step 1/3: Uploading image");
+    const blob = await uploadImage(file);
+    console.log(
+      `[WORKFLOW] Step 1/3 complete. Uploaded to ${blob.downloadUrl}`
+    );
 
-    console.log("[API] Workflow completed successfully", result);
+    // Step 2: Generate description using AI
+    console.log("[WORKFLOW] Step 2/3: Generating description");
+    const text = await generateDescription(blob);
+    console.log(
+      `[WORKFLOW] Step 2/3 complete. Generated ${text.length} characters`
+    );
 
-    return NextResponse.json(result);
+    // Step 3: Save to database and index in search
+    console.log("[WORKFLOW] Step 3/3: Saving to database and search");
+    const record = await saveImage(blob, text);
+    console.log(`[WORKFLOW] Step 3/3 complete. Image ID: ${record.id}`);
+
+    const workflowDuration = Date.now() - workflowStartTime;
+    console.log(
+      `[WORKFLOW] Successfully processed image ${file.name} in ${workflowDuration}ms`
+    );
+
+    return NextResponse.json({
+      success: true,
+      imageId: record.id,
+      imageUrl: blob.url,
+      processingTime: workflowDuration,
+    });
   } catch (error) {
+    const workflowDuration = Date.now() - workflowStartTime;
     const message = error instanceof Error ? error.message : "Unknown error";
     const isFatal = error instanceof FatalError;
 
-    console.error(`[API] ${isFatal ? "Fatal" : "Retryable"} error:`, message);
+    console.error(
+      `[WORKFLOW] ${isFatal ? "Fatal" : "Retryable"} error after ${workflowDuration}ms:`,
+      message
+    );
 
     return NextResponse.json(
       {
