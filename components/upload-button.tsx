@@ -13,7 +13,8 @@ export const UploadButton = () => {
   const abortControllerRef = useRef<AbortController | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const isDemo =
-    typeof window !== "undefined" && window.location.hostname === "vectr.store";
+    typeof window !== "undefined" &&
+    window.location.hostname.includes("vectr.store");
 
   const cancelUpload = () => {
     if (abortControllerRef.current) {
