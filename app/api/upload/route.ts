@@ -2,7 +2,7 @@
 
 import { FatalError } from "@vercel/workflow";
 import { NextResponse } from "next/server";
-import { processImage } from "../process/process-blob";
+import { processImage } from "./process-blob";
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
@@ -10,17 +10,16 @@ export async function POST(request: Request): Promise<NextResponse> {
     const file = formData.get("file") as File | null;
 
     if (!file) {
-      return NextResponse.json(
-        { error: "No file provided" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
     // Validate file type
     const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { error: `Invalid file type. Allowed types: ${allowedTypes.join(", ")}` },
+        {
+          error: `Invalid file type. Allowed types: ${allowedTypes.join(", ")}`,
+        },
         { status: 400 }
       );
     }
