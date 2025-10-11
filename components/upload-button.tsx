@@ -238,7 +238,7 @@ export const UploadButton = () => {
         type="file"
       />
       <Button
-        className="shrink-0 rounded-full"
+        className="shrink-0 rounded-full disabled:pointer-events-none disabled:opacity-50"
         disabled={isUploading || isDemo}
         onClick={() => inputRef.current?.click()}
         size="icon"
