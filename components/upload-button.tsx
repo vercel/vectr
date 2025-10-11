@@ -2,7 +2,7 @@
 
 import { upload } from "@vercel/blob/client";
 import { ImageUpIcon, XIcon } from "lucide-react";
-import { type ChangeEventHandler, useRef, useState } from "react";
+import { type ChangeEventHandler, useRef } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -11,14 +11,12 @@ import { useUploadedImages } from "@/components/uploaded-images-provider";
 export const UploadButton = () => {
   const { addImage } = useUploadedImages();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [isUploading, setIsUploading] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const cancelUpload = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
-      setIsUploading(false);
       toast.info("Upload cancelled");
     }
   };
@@ -32,7 +30,6 @@ export const UploadButton = () => {
 
     // Create a new AbortController for this upload batch
     abortControllerRef.current = new AbortController();
-    setIsUploading(true);
 
     // Create temporary blobs for all files immediately for optimistic UI
     const tempBlobs = files.map((file) => {
@@ -181,7 +178,6 @@ export const UploadButton = () => {
       }
     } finally {
       // Clean up
-      setIsUploading(false);
       abortControllerRef.current = null;
 
       // Dismiss progress toast
