@@ -4,6 +4,7 @@ import type { PutBlobResult } from "@vercel/blob";
 import {
   createContext,
   type ReactNode,
+  useCallback,
   useContext,
   useMemo,
   useState,
@@ -37,10 +38,12 @@ export const UploadedImagesProvider = ({
 }: UploadedImagesProviderProps) => {
   const [images, setImages] = useState<PutBlobResult[]>([]);
 
-  const addImage = (image: PutBlobResult) =>
-    setImages((prev) => [image, ...prev]);
+  const addImage = useCallback(
+    (image: PutBlobResult) => setImages((prev) => [image, ...prev]),
+    []
+  );
 
-  const value = useMemo(() => ({ images, addImage }), [images]);
+  const value = useMemo(() => ({ images, addImage }), [images, addImage]);
 
   return (
     <UploadedImagesContext.Provider value={value}>

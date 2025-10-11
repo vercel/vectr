@@ -14,15 +14,31 @@ type DropzoneProps = {
 export const Dropzone = ({ children }: DropzoneProps) => {
   const { addImage } = useUploadedImages();
 
-  const handleDrop = async (acceptedFiles: File[]) => {
+  const handleDrop = (acceptedFiles: File[]) => {
     try {
       for (const file of acceptedFiles) {
-        const blob = await upload(file.name, file, {
+        // Create a temporary blob URL and add to state immediately
+        const tempUrl = URL.createObjectURL(file);
+        const tempBlob = {
+          url: tempUrl,
+          downloadUrl: tempUrl,
+          pathname: file.name,
+          contentType: file.type,
+          contentDisposition: `attachment; filename="${file.name}"`,
+        };
+
+        addImage(tempBlob);
+
+        // Upload in the background
+        upload(file.name, file, {
           access: "public",
           handleUploadUrl: "/api/upload",
+        }).catch((error) => {
+          const message =
+            error instanceof Error ? error.message : "Unknown error";
+          toast.error("Failed to upload files", { description: message });
+          URL.revokeObjectURL(tempUrl);
         });
-
-        addImage(blob);
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
