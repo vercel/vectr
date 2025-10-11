@@ -1,6 +1,5 @@
 "use client";
 
-import { upload } from "@vercel/blob/client";
 import { ImageUpIcon, XIcon } from "lucide-react";
 import { type ChangeEventHandler, useRef } from "react";
 import { toast } from "sonner";
@@ -25,6 +24,19 @@ export const UploadButton = () => {
     const files = Array.from(event.target.files || []);
 
     if (files.length === 0) {
+      return;
+    }
+
+    // Check file sizes
+    const maxSize = 4.5 * 1024 * 1024; // 4.5MB
+    const oversizedFiles = files.filter((file) => file.size > maxSize);
+    if (oversizedFiles.length > 0) {
+      toast.error(
+        `${oversizedFiles.length} file${oversizedFiles.length > 1 ? "s" : ""} exceed the 4.5MB limit`,
+        {
+          description: "Please use smaller files for server uploads",
+        }
+      );
       return;
     }
 
@@ -90,21 +102,13 @@ export const UploadButton = () => {
       tempUrl: string;
     }) => {
       try {
-        // Upload the file using the shared AbortController
-        const blobResult = await upload(file.name, file, {
-          access: "public",
-          handleUploadUrl: "/api/upload",
-          abortSignal: abortControllerRef.current?.signal,
-          multipart: true,
-        });
+        // Create FormData and upload to server
+        const formData = new FormData();
+        formData.append("file", file);
 
-        // Process the blob
-        const response = await fetch("/api/process", {
+        const response = await fetch("/api/upload", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(blobResult),
+          body: formData,
           signal: abortControllerRef.current?.signal,
         });
 
