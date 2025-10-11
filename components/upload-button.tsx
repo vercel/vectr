@@ -175,7 +175,7 @@ export const UploadButton = () => {
         type="file"
       />
       <Button
-        className="rounded-full"
+        className="shrink-0 rounded-full"
         onClick={() => inputRef.current?.click()}
         size="icon"
         type="button"

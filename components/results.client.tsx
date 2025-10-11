@@ -1,7 +1,7 @@
 "use client";
 
 import type { ListBlobResult } from "@vercel/blob";
-import { Loader2Icon } from "lucide-react";
+import { ArrowLeftIcon, Loader2Icon } from "lucide-react";
 import { useActionState, useEffect } from "react";
 import { toast } from "sonner";
 import { search } from "@/app/actions/search";
@@ -25,6 +25,10 @@ export const ResultsClient = ({ defaultData }: ResultsClientProps) => {
     }
   }, [state]);
 
+  const reset = () => {
+    window.location.reload();
+  };
+
   return (
     <>
       <div className="columns-3 gap-4">
@@ -42,6 +46,18 @@ export const ResultsClient = ({ defaultData }: ResultsClientProps) => {
         action={formAction}
         className="-translate-x-1/2 fixed bottom-8 left-1/2 flex w-full max-w-lg items-center gap-1 rounded-full bg-background p-1 shadow-xl"
       >
+        {"data" in state && state.data.length > 0 && (
+          <Button
+            className="shrink-0 rounded-full"
+            disabled={isPending}
+            onClick={reset}
+            size="icon"
+            type="button"
+            variant="ghost"
+          >
+            <ArrowLeftIcon className="size-4" />
+          </Button>
+        )}
         <Input
           className="w-full rounded-full border-none bg-secondary shadow-none outline-none"
           disabled={isPending}
@@ -51,7 +67,7 @@ export const ResultsClient = ({ defaultData }: ResultsClientProps) => {
           required
         />
         {isPending ? (
-          <Button disabled size="icon" variant="ghost">
+          <Button className="shrink-0" disabled size="icon" variant="ghost">
             <Loader2Icon className="size-4 animate-spin" />
           </Button>
         ) : (
