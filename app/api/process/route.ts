@@ -3,14 +3,13 @@
 import { Search } from "@upstash/search";
 import type { PutBlobResult } from "@vercel/blob";
 import { generateText, type ImagePart } from "ai";
-import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { database } from "@/lib/database";
 import { image } from "@/lib/schema";
 
 const upstash = Search.fromEnv();
 
-const insertImage = async (blob: PutBlobResult) => {
+const insertImage = async (blob: PutBlobResult, text: string) => {
   console.log("Inserting image...", blob.downloadUrl);
 
   const [record] = await database
@@ -19,6 +18,7 @@ const insertImage = async (blob: PutBlobResult) => {
       downloadUrl: blob.downloadUrl,
       url: blob.url,
       mediaType: blob.contentType,
+      text,
     })
     .returning({ id: image.id });
 
@@ -55,11 +55,6 @@ const indexImage = async (id: string, text: string) => {
   return await index.upsert({ id, content: { text } });
 };
 
-const updateImage = async (id: string, text: string) => {
-  console.log("Updating image...", id, text);
-  return await database.update(image).set({ text }).where(eq(image.id, id));
-};
-
 export async function POST(request: Request): Promise<NextResponse> {
   const body = (await request.json()) as PutBlobResult;
 
@@ -69,15 +64,11 @@ export async function POST(request: Request): Promise<NextResponse> {
     console.log("Running onUploadCompleted...", body.downloadUrl);
 
     try {
-      const [record, text] = await Promise.all([
-        insertImage(body),
-        generateDescription(body),
-      ]);
+      const text = await generateDescription(body);
+      const record = await insertImage(body, text);
+      await indexImage(record.id, text);
 
-      await Promise.all([
-        updateImage(record.id, text),
-        indexImage(record.id, text),
-      ]);
+      console.log("Successfully processed blob.", body.downloadUrl);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
 
