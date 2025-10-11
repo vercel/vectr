@@ -1,65 +1,7 @@
 /** biome-ignore-all lint/suspicious/noConsole: "Handy for debugging" */
 
-import { Search } from "@upstash/search";
-import type { PutBlobResult } from "@vercel/blob";
 import { type HandleUploadBody, handleUpload } from "@vercel/blob/client";
-import { generateText, type ImagePart } from "ai";
-import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { database } from "@/lib/database";
-import { image } from "@/lib/schema";
-
-const upstash = Search.fromEnv();
-
-const insertImage = async (blob: PutBlobResult) => {
-  console.log("Inserting image...", blob.downloadUrl);
-
-  const [record] = await database
-    .insert(image)
-    .values({
-      downloadUrl: blob.downloadUrl,
-      url: blob.url,
-      mediaType: blob.contentType,
-    })
-    .returning({ id: image.id });
-
-  return record;
-};
-
-const generateDescription = async (blob: PutBlobResult) => {
-  console.log("Generating description...", blob.downloadUrl);
-
-  const imagePart: ImagePart = {
-    type: "image",
-    image: blob.url,
-    mediaType: blob.contentType,
-  };
-
-  const { text } = await generateText({
-    model: "meta/llama-3.2-90b",
-    system: "Describe the image in detail.",
-    messages: [
-      {
-        role: "user",
-        content: [imagePart],
-      },
-    ],
-  });
-
-  return text;
-};
-
-const indexImage = async (id: string, text: string) => {
-  console.log("Indexing image...", id, text);
-  const index = upstash.index("images");
-
-  return await index.upsert({ id, content: { text } });
-};
-
-const updateImage = async (id: string, text: string) => {
-  console.log("Updating image...", id, text);
-  return await database.update(image).set({ text }).where(eq(image.id, id));
-};
 
 export async function POST(request: Request): Promise<NextResponse> {
   const body = (await request.json()) as HandleUploadBody;
@@ -76,31 +18,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         return {
           allowedContentTypes: ["image/jpeg", "image/png", "image/webp"],
           addRandomSuffix: true,
-          callbackUrl:
-            process.env.NODE_ENV === "production"
-              ? undefined
-              : "http://localhost:3000/api/upload",
         };
-      },
-      onUploadCompleted: async ({ blob }) => {
-        console.log("Running onUploadCompleted...", blob.downloadUrl);
-
-        try {
-          const [record, text] = await Promise.all([
-            insertImage(blob),
-            generateDescription(blob),
-          ]);
-
-          await Promise.all([
-            updateImage(record.id, text),
-            indexImage(record.id, text),
-          ]);
-        } catch (error) {
-          const message =
-            error instanceof Error ? error.message : "Unknown error";
-
-          throw new Error(message);
-        }
       },
     });
 

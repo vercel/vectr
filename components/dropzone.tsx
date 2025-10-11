@@ -14,7 +14,7 @@ type DropzoneProps = {
 export const Dropzone = ({ children }: DropzoneProps) => {
   const { addImage } = useUploadedImages();
 
-  const handleDrop = (acceptedFiles: File[]) => {
+  const handleDrop = async (acceptedFiles: File[]) => {
     try {
       for (const file of acceptedFiles) {
         // Create a temporary blob URL and add to state immediately
@@ -29,16 +29,38 @@ export const Dropzone = ({ children }: DropzoneProps) => {
 
         addImage(tempBlob);
 
-        // Upload in the background
-        upload(file.name, file, {
-          access: "public",
-          handleUploadUrl: "/api/upload",
-        }).catch((error) => {
+        try {
+          // Upload in the background
+          const blobResult = await upload(file.name, file, {
+            access: "public",
+            handleUploadUrl: "/api/upload",
+          });
+
+          // Optionally revoke the temp URL (to avoid resource leak)
+          URL.revokeObjectURL(tempUrl);
+
+          // Process the blob
+          const response = await fetch("/api/process", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(blobResult),
+          });
+
+          if (!response.ok) {
+            const error = (await response.json()) as { error: string };
+
+            throw new Error(error.error);
+          }
+
+          toast.success("Files uploaded successfully");
+        } catch (error) {
           const message =
             error instanceof Error ? error.message : "Unknown error";
           toast.error("Failed to upload files", { description: message });
           URL.revokeObjectURL(tempUrl);
-        });
+        }
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
