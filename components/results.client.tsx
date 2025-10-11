@@ -14,16 +14,26 @@ export const ResultsClient = ({ defaultData }: ResultsClientProps) => {
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="columns-3 gap-4">
         {images.map((image) => (
-          <div key={image.url}>
-            <Image alt={image.url} height={1000} src={image.url} width={1000} />
+          <div
+            className="mb-4 rounded-xl bg-card p-2 shadow-xl"
+            key={image.url}
+          >
+            <Image
+              alt={image.url}
+              className="rounded-md"
+              height={1000}
+              src={image.url}
+              width={1000}
+            />
           </div>
         ))}
         {defaultData.blobs.map((blob) => (
-          <div key={blob.url}>
+          <div className="mb-4 rounded-xl bg-card p-2 shadow-xl" key={blob.url}>
             <Image
               alt={blob.downloadUrl}
+              className="rounded-md"
               height={1000}
               src={blob.downloadUrl}
               width={1000}
@@ -32,7 +42,7 @@ export const ResultsClient = ({ defaultData }: ResultsClientProps) => {
         ))}
       </div>
 
-      <div className="absolute right-0 bottom-0 left-0 rounded-full bg-background p-1">
+      <div className="-translate-x-1/2 fixed bottom-8 left-1/2 w-full max-w-2xl rounded-full bg-background p-1">
         <Input className="w-full" placeholder="Search" />
       </div>
     </>
