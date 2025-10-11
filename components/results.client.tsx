@@ -15,6 +15,8 @@ type ResultsClientProps = {
   defaultData: ListBlobResult["blobs"];
 };
 
+const PRIORITY_COUNT = 12;
+
 export const ResultsClient = ({ defaultData }: ResultsClientProps) => {
   const { images } = useUploadedImages();
   const [state, formAction, isPending] = useActionState(search, { data: [] });
@@ -32,13 +34,27 @@ export const ResultsClient = ({ defaultData }: ResultsClientProps) => {
   return (
     <>
       <div className="columns-3 gap-4">
-        {images.map((image) => (
-          <Preview key={image.url} url={image.url} />
+        {images.map((image, index) => (
+          <Preview
+            key={image.url}
+            priority={index < PRIORITY_COUNT}
+            url={image.url}
+          />
         ))}
         {"data" in state && state.data?.length
-          ? state.data.map((blob) => <Preview key={blob.url} url={blob.url} />)
-          : defaultData.map((blob) => (
-              <Preview key={blob.url} url={blob.downloadUrl} />
+          ? state.data.map((blob, index) => (
+              <Preview
+                key={blob.url}
+                priority={index < PRIORITY_COUNT}
+                url={blob.url}
+              />
+            ))
+          : defaultData.map((blob, index) => (
+              <Preview
+                key={blob.url}
+                priority={index < PRIORITY_COUNT}
+                url={blob.downloadUrl}
+              />
             ))}
       </div>
 
