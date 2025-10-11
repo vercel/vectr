@@ -12,6 +12,9 @@ export const Header = () => (
         A free, open-source template for building natural language image search
         on the AI Cloud.
       </p>
+      <p className="text-muted-foreground text-sm italic">
+        Try searching for "water" or "desert".
+      </p>
     </div>
     <ul className="flex flex-col gap-2 text-muted-foreground sm:gap-4">
       <li className="flex gap-2">
