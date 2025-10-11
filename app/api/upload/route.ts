@@ -15,9 +15,10 @@ export async function POST(request: Request): Promise<NextResponse> {
       // biome-ignore lint/suspicious/useAwait: "onBeforeGenerateToken is async"
       onBeforeGenerateToken: async () => {
         console.log("Running onBeforeGenerateToken...");
+
         return {
           allowedContentTypes: ["image/jpeg", "image/png", "image/webp"],
-          addRandomSuffix: true,
+          allowOverwrite: true,
         };
       },
     });
