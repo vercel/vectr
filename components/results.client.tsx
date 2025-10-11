@@ -57,7 +57,7 @@ export const ResultsClient = ({ defaultData }: ResultsClientProps) => {
       </div>
 
       <form
-        className="-translate-x-1/2 fixed bottom-8 left-1/2 flex w-full max-w-xl items-center gap-1 rounded-full bg-background p-1"
+        className="-translate-x-1/2 fixed bottom-8 left-1/2 flex w-full max-w-xl items-center gap-1 rounded-full bg-background p-1 shadow-xl"
         onSubmit={handleSubmit}
       >
         <Input
