@@ -32,8 +32,17 @@ export const POST = async (request: Request): Promise<NextResponse> => {
       );
     }
 
+    // Convert File to serializable format for the workflow
+    const arrayBuffer = await file.arrayBuffer();
+    const fileData = {
+      buffer: arrayBuffer,
+      name: file.name,
+      type: file.type,
+      size: file.size,
+    };
+
     // Start the workflow in the background
-    const result = await start(processImage, [file]);
+    const result = await start(processImage, [fileData]);
 
     return NextResponse.json({
       success: true,

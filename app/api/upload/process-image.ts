@@ -5,24 +5,31 @@ import { generateDescription } from "./generate-description";
 import { indexImage } from "./index-image";
 import { uploadImage } from "./upload-image";
 
-export const processImage = async (file: File) => {
+type SerializableFile = {
+  buffer: ArrayBuffer;
+  name: string;
+  type: string;
+  size: number;
+};
+
+export const processImage = async (fileData: SerializableFile) => {
   "use workflow";
 
   const workflowStartTime = Date.now();
 
   try {
     console.log(
-      `[WORKFLOW] Starting image processing workflow for ${file.name}`
+      `[WORKFLOW] Starting image processing workflow for ${fileData.name}`
     );
     console.log("[WORKFLOW] File details:", {
-      name: file.name,
-      type: file.type,
-      size: file.size,
+      name: fileData.name,
+      type: fileData.type,
+      size: fileData.size,
     });
 
     // Step 1: Upload image to Blob Storage
     console.log("[WORKFLOW] Step 1/3: Uploading image");
-    const blob = await uploadImage(file);
+    const blob = await uploadImage(fileData);
     console.log(
       `[WORKFLOW] Step 1/3 complete. Uploaded to ${blob.downloadUrl}`
     );
@@ -41,7 +48,7 @@ export const processImage = async (file: File) => {
 
     const workflowDuration = Date.now() - workflowStartTime;
     console.log(
-      `[WORKFLOW] Successfully processed image ${file.name} in ${workflowDuration}ms`
+      `[WORKFLOW] Successfully processed image ${fileData.name} in ${workflowDuration}ms`
     );
 
     return {

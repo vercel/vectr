@@ -3,21 +3,29 @@
 import { put } from "@vercel/blob";
 import { FatalError, getStepMetadata, RetryableError } from "@vercel/workflow";
 
-export const uploadImage = async (file: File) => {
+type SerializableFile = {
+  buffer: ArrayBuffer;
+  name: string;
+  type: string;
+  size: number;
+};
+
+export const uploadImage = async (fileData: SerializableFile) => {
   "use step";
 
   const { attempt, stepStartedAt, stepId } = getStepMetadata();
 
-  console.log(`[${stepId}] Uploading image (attempt ${attempt})...`, file.name);
+  console.log(`[${stepId}] Uploading image (attempt ${attempt})...`, fileData.name);
 
   try {
-    const blob = await put(file.name, file, {
+    const blob = await put(fileData.name, fileData.buffer, {
       access: "public",
       addRandomSuffix: true,
+      contentType: fileData.type,
     });
 
     console.log(
-      `[${stepId}] Successfully uploaded image ${file.name} at ${stepStartedAt.toISOString()}`,
+      `[${stepId}] Successfully uploaded image ${fileData.name} at ${stepStartedAt.toISOString()}`,
       blob.url
     );
 
