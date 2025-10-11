@@ -1,0 +1,122 @@
+name: Workflow Issue
+description: Report issues with Vercel Workflow processing (steps, retries, errors)
+title: "[Workflow]: "
+labels: ["workflow", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Report issues related to the image processing workflow, including step failures, retry logic, or error handling.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the workflow issue
+      placeholder: Tell us what's happening with the workflow
+    validations:
+      required: true
+
+  - type: dropdown
+    id: step
+    attributes:
+      label: Which workflow step is affected?
+      multiple: true
+      options:
+        - Step 1 - Generate Description (AI)
+        - Step 2 - Insert Image (Database)
+        - Step 3 - Index Image (Search)
+        - Entire Workflow
+        - Webhook Trigger
+        - Unknown
+    validations:
+      required: true
+
+  - type: dropdown
+    id: error-type
+    attributes:
+      label: Error Type
+      options:
+        - RetryableError (rate limit, timeout, network)
+        - FatalError (invalid data, constraint violation)
+        - Generic Error
+        - No error, but unexpected behavior
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Workflow Logs
+      description: Paste relevant workflow logs (look for [WORKFLOW], [stepId], or [API] prefixes)
+      render: shell
+      placeholder: Paste logs here
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this workflow issue?
+      placeholder: |
+        1. Upload image type '...'
+        2. Wait for processing
+        3. Check logs/results
+    validations:
+      required: true
+
+  - type: input
+    id: attempt-count
+    attributes:
+      label: Retry Attempt Count
+      description: How many times did the step retry before failing?
+      placeholder: e.g., 3, 5, or "didn't retry"
+
+  - type: textarea
+    id: image-details
+    attributes:
+      label: Image Details
+      description: Provide details about the image(s) that caused the issue
+      placeholder: |
+        - File type: PNG, JPEG, etc.
+        - File size: 2MB
+        - Dimensions: 1920x1080
+        - Any special characteristics
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: How often does this occur?
+      options:
+        - Always (100%)
+        - Frequently (> 50%)
+        - Sometimes (10-50%)
+        - Rarely (< 10%)
+        - Only once
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should the workflow do?
+      placeholder: The workflow should...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-fix
+    attributes:
+      label: Proposed Fix
+      description: If you have ideas on how to fix this, please share
+      placeholder: We could improve this by...
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other relevant information
+      placeholder: Any additional information that might help

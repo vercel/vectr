@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions & Discussions
+    url: https://github.com/your-username/vectr/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: Documentation
+    url: https://github.com/your-username/vectr#readme
+    about: Check out the README for setup and usage information
+  - name: Contributing Guide
+    url: https://github.com/your-username/vectr/blob/main/.github/CONTRIBUTING.md
+    about: Learn how to contribute to Vectr
