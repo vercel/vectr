@@ -39,11 +39,14 @@ export const ResultsClient = ({ defaultData }: ResultsClientProps) => {
     window.location.reload();
   };
 
+  const hasImages =
+    images.length ||
+    defaultData.length ||
+    ("data" in state && state.data?.length);
+
   return (
     <>
-      {images.length ||
-      defaultData.length ||
-      ("data" in state && state.data?.length) ? (
+      {hasImages ? (
         <div className="columns-3 gap-4">
           {images.map((image, index) => (
             <Preview
@@ -110,7 +113,7 @@ export const ResultsClient = ({ defaultData }: ResultsClientProps) => {
         )}
         <Input
           className="w-full rounded-full border-none bg-secondary shadow-none outline-none"
-          disabled={isPending}
+          disabled={isPending || !hasImages}
           id="search"
           name="search"
           placeholder="Search by description"
