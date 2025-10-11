@@ -9,23 +9,9 @@ import { image } from "@/lib/schema";
 
 const upstash = Search.fromEnv();
 
-const insertImage = async (blob: PutBlobResult, text: string) => {
-  console.log("Inserting image...", blob.downloadUrl);
+async function generateDescription(blob: PutBlobResult) {
+  "use step";
 
-  const [record] = await database
-    .insert(image)
-    .values({
-      downloadUrl: blob.downloadUrl,
-      url: blob.url,
-      mediaType: blob.contentType,
-      text,
-    })
-    .returning({ id: image.id });
-
-  return record;
-};
-
-const generateDescription = async (blob: PutBlobResult) => {
   console.log("Generating description...", blob.downloadUrl);
 
   const imagePart: ImagePart = {
@@ -46,36 +32,59 @@ const generateDescription = async (blob: PutBlobResult) => {
   });
 
   return text;
-};
+}
 
-const indexImage = async (id: string, text: string) => {
+async function insertImage(blob: PutBlobResult, text: string) {
+  "use step";
+
+  console.log("Inserting image...", blob.downloadUrl);
+
+  const [record] = await database
+    .insert(image)
+    .values({
+      downloadUrl: blob.downloadUrl,
+      url: blob.url,
+      mediaType: blob.contentType,
+      text,
+    })
+    .returning({ id: image.id });
+
+  return record;
+}
+
+async function indexImage(id: string, text: string) {
+  "use step";
+
   console.log("Indexing image...", id, text);
   const index = upstash.index("images");
 
   return await index.upsert({ id, content: { text } });
-};
+}
+
+async function processBlob(blob: PutBlobResult) {
+  "use workflow";
+
+  console.log("Processing blob...", blob.downloadUrl);
+
+  // Each step runs on a separate serverless function with automatic retries
+  const text = await generateDescription(blob);
+  const record = await insertImage(blob, text);
+  await indexImage(record.id, text);
+
+  console.log("Successfully processed blob.", blob.downloadUrl);
+
+  return { success: true };
+}
 
 export async function POST(request: Request): Promise<NextResponse> {
-  const body = (await request.json()) as PutBlobResult;
-
-  console.log("Processing blob...", body);
-
   try {
+    const body = (await request.json()) as PutBlobResult;
+
     console.log("Running onUploadCompleted...", body.downloadUrl);
 
-    try {
-      const text = await generateDescription(body);
-      const record = await insertImage(body, text);
-      await indexImage(record.id, text);
+    const result = await processBlob(body);
 
-      console.log("Successfully processed blob.", body.downloadUrl);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error";
-
-      throw new Error(message);
-    }
-
-    return NextResponse.json({ success: true });
+    return NextResponse.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
 
