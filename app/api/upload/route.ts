@@ -61,6 +61,10 @@ export async function POST(request: Request): Promise<NextResponse> {
       onBeforeGenerateToken: async () => ({
         allowedContentTypes: ["image/jpeg", "image/png", "image/webp"],
         addRandomSuffix: true,
+        callbackUrl:
+          process.env.NODE_ENV === "production"
+            ? undefined
+            : "http://localhost:3000/api/upload",
       }),
       onUploadCompleted: async ({ blob }) => {
         try {

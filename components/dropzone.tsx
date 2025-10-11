@@ -32,7 +32,7 @@ export const Dropzone = ({ children }: DropzoneProps) => {
   };
 
   return (
-    <DropzoneComponent onDrop={handleDrop}>
+    <DropzoneComponent noClick noKeyboard onDrop={handleDrop}>
       {({ getRootProps, getInputProps, isDragActive }) => (
         <div {...getRootProps()} className="h-screen w-screen">
           <input {...getInputProps()} />
