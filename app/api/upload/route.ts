@@ -1,4 +1,5 @@
-import { FatalError, start } from "@vercel/workflow";
+import { FatalError } from "@vercel/workflow";
+import { start } from "@vercel/workflow/api";
 import { NextResponse } from "next/server";
 import { processImage } from "./process-image";
 
@@ -32,11 +33,11 @@ export const POST = async (request: Request): Promise<NextResponse> => {
     }
 
     // Start the workflow in the background
-    const result = await start(processImage, file);
+    const result = await start(processImage, [file]);
 
     return NextResponse.json({
       success: true,
-      workflowId: result.workflowId,
+      runId: result.runId,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
