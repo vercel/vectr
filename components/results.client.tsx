@@ -40,7 +40,7 @@ export const ResultsClient = ({ defaultData }: ResultsClientProps) => {
 
       <form
         action={formAction}
-        className="-translate-x-1/2 fixed bottom-8 left-1/2 flex w-full max-w-xl items-center gap-1 rounded-full bg-background p-1 shadow-xl"
+        className="-translate-x-1/2 fixed bottom-8 left-1/2 flex w-full max-w-lg items-center gap-1 rounded-full bg-background p-1 shadow-xl"
       >
         <Input
           className="w-full rounded-full border-none bg-secondary shadow-none outline-none"
