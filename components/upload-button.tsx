@@ -5,6 +5,7 @@ import { ImageUpIcon } from "lucide-react";
 import { useRef } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { useUploadedImages } from "@/components/uploaded-images-provider";
 
 export const UploadButton = () => {
@@ -38,41 +39,91 @@ export const UploadButton = () => {
       addImage(blob);
     }
 
-    // Process all uploads in parallel
-    const results = await Promise.allSettled(
-      tempBlobs.map(async ({ file, tempUrl }) => {
-        try {
-          // Upload the file
-          const blobResult = await upload(file.name, file, {
-            access: "public",
-            handleUploadUrl: "/api/upload",
-          });
+    // Show progress toast with custom UI
+    let completed = 0;
+    const total = tempBlobs.length;
 
-          // Process the blob
-          const response = await fetch("/api/process", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(blobResult),
-          });
-
-          if (!response.ok) {
-            const error = (await response.json()) as { error: string };
-            throw new Error(error.error);
-          }
-
-          // Revoke temp URL on success
-          URL.revokeObjectURL(tempUrl);
-
-          return { success: true, fileName: file.name };
-        } catch (error) {
-          // Revoke temp URL on error
-          URL.revokeObjectURL(tempUrl);
-          throw error;
-        }
-      })
+    const toastId = toast(
+      <div className="flex flex-col gap-2">
+        <div className="text-sm font-medium">
+          Uploading {total} file{total > 1 ? "s" : ""}...
+        </div>
+        <div className="flex items-center gap-2">
+          <Progress value={(completed / total) * 100} className="flex-1" />
+          <span className="text-xs text-muted-foreground">
+            {completed}/{total}
+          </span>
+        </div>
+      </div>,
+      { duration: Infinity }
     );
+
+    // Helper function to process a single file
+    const processFile = async ({ file, tempUrl }: { file: File; tempUrl: string }) => {
+      try {
+        // Upload the file
+        const blobResult = await upload(file.name, file, {
+          access: "public",
+          handleUploadUrl: "/api/upload",
+        });
+
+        // Process the blob
+        const response = await fetch("/api/process", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(blobResult),
+        });
+
+        if (!response.ok) {
+          const error = (await response.json()) as { error: string };
+          throw new Error(error.error);
+        }
+
+        // Revoke temp URL on success
+        URL.revokeObjectURL(tempUrl);
+
+        return { success: true, fileName: file.name };
+      } catch (error) {
+        // Revoke temp URL on error
+        URL.revokeObjectURL(tempUrl);
+        throw error;
+      }
+    };
+
+    // Process uploads in batches of 10
+    const BATCH_SIZE = 10;
+    const results: PromiseSettledResult<{ success: boolean; fileName: string }>[] = [];
+
+    for (let i = 0; i < tempBlobs.length; i += BATCH_SIZE) {
+      const batch = tempBlobs.slice(i, i + BATCH_SIZE);
+      const batchResults = await Promise.allSettled(
+        batch.map(processFile)
+      );
+
+      results.push(...batchResults);
+      completed += batch.length;
+
+      // Update progress toast
+      toast(
+        <div className="flex flex-col gap-2">
+          <div className="text-sm font-medium">
+            Uploading {total} file{total > 1 ? "s" : ""}...
+          </div>
+          <div className="flex items-center gap-2">
+            <Progress value={(completed / total) * 100} className="flex-1" />
+            <span className="text-xs text-muted-foreground">
+              {completed}/{total}
+            </span>
+          </div>
+        </div>,
+        { id: toastId, duration: Infinity }
+      );
+    }
+
+    // Dismiss progress toast
+    toast.dismiss(toastId);
 
     // Show consolidated toast notifications
     const successful = results.filter((r) => r.status === "fulfilled");

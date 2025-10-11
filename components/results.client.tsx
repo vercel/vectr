@@ -7,7 +7,7 @@ import { UploadButton } from "./upload-button";
 import { useUploadedImages } from "./uploaded-images-provider";
 
 type ResultsClientProps = {
-  defaultData: ListBlobResult;
+  defaultData: ListBlobResult["blobs"];
 };
 
 export const ResultsClient = ({ defaultData }: ResultsClientProps) => {
@@ -30,7 +30,7 @@ export const ResultsClient = ({ defaultData }: ResultsClientProps) => {
             />
           </div>
         ))}
-        {defaultData.blobs.map((blob) => (
+        {defaultData.map((blob) => (
           <div className="mb-4 rounded-xl bg-card p-2 shadow-xl" key={blob.url}>
             <Image
               alt={blob.downloadUrl}
