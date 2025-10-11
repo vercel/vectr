@@ -107,7 +107,7 @@ Vectr uses sophisticated error handling to ensure reliable processing:
 
 The easiest way to deploy Vectr is using the Vercel Marketplace:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/your-username/vectr)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?demo-description=A+free%2C+open-source+template+for+building+natural+language+image+search+on+the+AI+Cloud.&demo-image=https%3A%2F%2Fvectr.store%2Fopengraph-image.png&demo-title=vectr.store&demo-url=https%3A%2F%2Fvectr.store%2F&from=templates&project-name=Vectr&repository-name=vectr&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fvectr&products=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22upstash-search%22%2C%22integrationSlug%22%3A%22upstash%22%7D%2C%7B%22type%22%3A%22blob%22%7D%5D&skippable-integrations=0)
 
 During deployment, you'll be prompted to set up:
 
