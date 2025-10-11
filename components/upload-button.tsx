@@ -178,6 +178,7 @@ export const UploadButton = () => {
         className="rounded-full"
         onClick={() => inputRef.current?.click()}
         size="icon"
+        type="button"
         variant="ghost"
       >
         <ImageUpIcon className="size-4" />
