@@ -45,26 +45,35 @@ export const UploadButton = () => {
 
     const toastId = toast(
       <div className="flex flex-col gap-2">
-        <div className="text-sm font-medium">
+        <div className="font-medium text-sm">
           Uploading {total} file{total > 1 ? "s" : ""}...
         </div>
         <div className="flex items-center gap-2">
-          <Progress value={(completed / total) * 100} className="flex-1" />
-          <span className="text-xs text-muted-foreground">
+          <Progress className="flex-1" value={(completed / total) * 100} />
+          <span className="text-muted-foreground text-xs">
             {completed}/{total}
           </span>
         </div>
       </div>,
-      { duration: Infinity }
+      { duration: Number.POSITIVE_INFINITY }
     );
 
     // Helper function to process a single file
-    const processFile = async ({ file, tempUrl }: { file: File; tempUrl: string }) => {
+    const processFile = async ({
+      file,
+      tempUrl,
+    }: {
+      file: File;
+      tempUrl: string;
+    }) => {
+      const controller = new AbortController();
       try {
         // Upload the file
         const blobResult = await upload(file.name, file, {
           access: "public",
           handleUploadUrl: "/api/upload",
+          abortSignal: controller.signal,
+          multipart: true,
         });
 
         // Process the blob
@@ -94,13 +103,14 @@ export const UploadButton = () => {
 
     // Process uploads in batches of 10
     const BATCH_SIZE = 10;
-    const results: PromiseSettledResult<{ success: boolean; fileName: string }>[] = [];
+    const results: PromiseSettledResult<{
+      success: boolean;
+      fileName: string;
+    }>[] = [];
 
     for (let i = 0; i < tempBlobs.length; i += BATCH_SIZE) {
       const batch = tempBlobs.slice(i, i + BATCH_SIZE);
-      const batchResults = await Promise.allSettled(
-        batch.map(processFile)
-      );
+      const batchResults = await Promise.allSettled(batch.map(processFile));
 
       results.push(...batchResults);
       completed += batch.length;
@@ -108,17 +118,17 @@ export const UploadButton = () => {
       // Update progress toast
       toast(
         <div className="flex flex-col gap-2">
-          <div className="text-sm font-medium">
+          <div className="font-medium text-sm">
             Uploading {total} file{total > 1 ? "s" : ""}...
           </div>
           <div className="flex items-center gap-2">
-            <Progress value={(completed / total) * 100} className="flex-1" />
-            <span className="text-xs text-muted-foreground">
+            <Progress className="flex-1" value={(completed / total) * 100} />
+            <span className="text-muted-foreground text-xs">
               {completed}/{total}
             </span>
           </div>
         </div>,
-        { id: toastId, duration: Infinity }
+        { id: toastId, duration: Number.POSITIVE_INFINITY }
       );
     }
 
