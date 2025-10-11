@@ -3,7 +3,7 @@
 import { put } from "@vercel/blob";
 import { FatalError, getStepMetadata, RetryableError } from "@vercel/workflow";
 
-export async function uploadImage(file: File) {
+export const uploadImage = async (file: File) => {
   "use step";
 
   const { attempt, stepStartedAt, stepId } = getStepMetadata();
@@ -65,6 +65,6 @@ export async function uploadImage(file: File) {
     // Otherwise, retry
     throw new Error(`Image upload failed: ${message}`);
   }
-}
+};
 
 uploadImage.maxRetries = 3;

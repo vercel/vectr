@@ -6,7 +6,7 @@ import { FatalError, getStepMetadata, RetryableError } from "@vercel/workflow";
 
 const upstash = Search.fromEnv();
 
-export async function indexImage(blob: PutBlobResult, text: string) {
+export const indexImage = async (blob: PutBlobResult, text: string) => {
   "use step";
 
   const { attempt, stepStartedAt, stepId } = getStepMetadata();
@@ -72,6 +72,6 @@ export async function indexImage(blob: PutBlobResult, text: string) {
     // Otherwise, retry
     throw new Error(`Search indexing failed: ${message}`);
   }
-}
+};
 
 indexImage.maxRetries = 5;

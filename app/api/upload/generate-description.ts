@@ -4,7 +4,7 @@ import type { PutBlobResult } from "@vercel/blob";
 import { FatalError, getStepMetadata, RetryableError } from "@vercel/workflow";
 import { generateText, type ImagePart } from "ai";
 
-export async function generateDescription(blob: PutBlobResult) {
+export const generateDescription = async (blob: PutBlobResult) => {
   "use step";
 
   const { attempt, stepStartedAt, stepId } = getStepMetadata();
@@ -72,6 +72,6 @@ export async function generateDescription(blob: PutBlobResult) {
     // Otherwise, retry with exponential backoff
     throw new Error(`AI generation failed: ${message}`);
   }
-}
+};
 
 generateDescription.maxRetries = 5;

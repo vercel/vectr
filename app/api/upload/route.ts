@@ -6,7 +6,7 @@ import { generateDescription } from "./generate-description";
 import { indexImage } from "./index-image";
 import { uploadImage } from "./upload-image";
 
-export async function POST(request: Request): Promise<NextResponse> {
+export const POST = async (request: Request): Promise<NextResponse> => {
   "use workflow";
 
   const workflowStartTime = Date.now();
@@ -96,4 +96,4 @@ export async function POST(request: Request): Promise<NextResponse> {
       { status: isFatal ? 400 : 500 }
     );
   }
-}
+};
