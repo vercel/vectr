@@ -1,11 +1,12 @@
 "use client";
 
 import type { ListBlobResult } from "@vercel/blob";
-import { type FormEventHandler, useState } from "react";
+import { Loader2Icon } from "lucide-react";
+import { useActionState, useEffect } from "react";
 import { toast } from "sonner";
 import { search } from "@/app/actions/search";
-import type { Image } from "@/lib/schema";
 import { Preview } from "./preview";
+import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { UploadButton } from "./upload-button";
 import { useUploadedImages } from "./uploaded-images-provider";
@@ -16,32 +17,13 @@ type ResultsClientProps = {
 
 export const ResultsClient = ({ defaultData }: ResultsClientProps) => {
   const { images } = useUploadedImages();
-  const [data, setData] = useState<Image[]>([]);
+  const [state, formAction, isPending] = useActionState(search, { data: [] });
 
-  const handleSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.target as HTMLFormElement);
-    const query = formData.get("search");
-
-    if (!query || typeof query !== "string") {
-      toast.error("Please enter a search query");
-      return;
+  useEffect(() => {
+    if ("error" in state) {
+      toast.error(state.error);
     }
-
-    try {
-      const response = await search(query);
-
-      if ("error" in response) {
-        throw new Error(response.error);
-      }
-
-      setData(response.data);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error";
-
-      toast.error(message);
-    }
-  };
+  }, [state]);
 
   return (
     <>
@@ -49,24 +31,32 @@ export const ResultsClient = ({ defaultData }: ResultsClientProps) => {
         {images.map((image) => (
           <Preview key={image.url} url={image.url} />
         ))}
-        {data.length
-          ? data.map((blob) => <Preview key={blob.url} url={blob.url} />)
+        {"data" in state && state.data?.length
+          ? state.data.map((blob) => <Preview key={blob.url} url={blob.url} />)
           : defaultData.map((blob) => (
               <Preview key={blob.url} url={blob.downloadUrl} />
             ))}
       </div>
 
       <form
+        action={formAction}
         className="-translate-x-1/2 fixed bottom-8 left-1/2 flex w-full max-w-xl items-center gap-1 rounded-full bg-background p-1 shadow-xl"
-        onSubmit={handleSubmit}
       >
         <Input
           className="w-full rounded-full border-none bg-secondary shadow-none outline-none"
+          disabled={isPending}
           id="search"
           name="search"
           placeholder="Search by description"
+          required
         />
-        <UploadButton />
+        {isPending ? (
+          <Button disabled size="icon" variant="ghost">
+            <Loader2Icon className="size-4 animate-spin" />
+          </Button>
+        ) : (
+          <UploadButton />
+        )}
       </form>
     </>
   );

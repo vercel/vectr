@@ -9,9 +9,10 @@ export const Preview = ({ url }: PreviewProps) => (
     <Image
       alt={url}
       className="rounded-md"
-      height={1000}
+      height={630}
+      sizes="630px"
       src={url}
-      width={1000}
+      width={630}
     />
   </div>
 );

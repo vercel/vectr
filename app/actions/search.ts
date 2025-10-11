@@ -16,7 +16,16 @@ type SearchResponse =
       error: string;
     };
 
-export const search = async (query: string): Promise<SearchResponse> => {
+export const search = async (
+  _prevState: SearchResponse | undefined,
+  formData: FormData
+): Promise<SearchResponse> => {
+  const query = formData.get("search");
+
+  if (!query || typeof query !== "string") {
+    return { error: "Please enter a search query" };
+  }
+
   try {
     console.log("Searching index for query:", query);
     const results = await index.search({ query });
