@@ -15,29 +15,36 @@ export const Dropzone = ({ children }: DropzoneProps) => {
   const { addImage } = useUploadedImages();
 
   const handleDrop = async (acceptedFiles: File[]) => {
-    try {
-      for (const file of acceptedFiles) {
-        // Create a temporary blob URL and add to state immediately
-        const tempUrl = URL.createObjectURL(file);
-        const tempBlob = {
+    // Create temporary blobs for all files immediately for optimistic UI
+    const tempBlobs = acceptedFiles.map((file) => {
+      const tempUrl = URL.createObjectURL(file);
+      return {
+        file,
+        tempUrl,
+        blob: {
           url: tempUrl,
           downloadUrl: tempUrl,
           pathname: file.name,
           contentType: file.type,
           contentDisposition: `attachment; filename="${file.name}"`,
-        };
+        },
+      };
+    });
 
-        addImage(tempBlob);
+    // Add all temp blobs to state immediately
+    for (const { blob } of tempBlobs) {
+      addImage(blob);
+    }
 
+    // Process all uploads in parallel
+    const results = await Promise.allSettled(
+      tempBlobs.map(async ({ file, tempUrl }) => {
         try {
-          // Upload in the background
+          // Upload the file
           const blobResult = await upload(file.name, file, {
             access: "public",
             handleUploadUrl: "/api/upload",
           });
-
-          // Optionally revoke the temp URL (to avoid resource leak)
-          URL.revokeObjectURL(tempUrl);
 
           // Process the blob
           const response = await fetch("/api/process", {
@@ -50,22 +57,41 @@ export const Dropzone = ({ children }: DropzoneProps) => {
 
           if (!response.ok) {
             const error = (await response.json()) as { error: string };
-
             throw new Error(error.error);
           }
 
-          toast.success("Files uploaded successfully");
-        } catch (error) {
-          const message =
-            error instanceof Error ? error.message : "Unknown error";
-          toast.error("Failed to upload files", { description: message });
+          // Revoke temp URL on success
           URL.revokeObjectURL(tempUrl);
-        }
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error";
 
-      toast.error("Failed to upload files", { description: message });
+          return { success: true, fileName: file.name };
+        } catch (error) {
+          // Revoke temp URL on error
+          URL.revokeObjectURL(tempUrl);
+          throw error;
+        }
+      })
+    );
+
+    // Show consolidated toast notifications
+    const successful = results.filter((r) => r.status === "fulfilled");
+    const failed = results.filter((r) => r.status === "rejected");
+
+    if (successful.length > 0) {
+      toast.success(
+        `${successful.length} file${successful.length > 1 ? "s" : ""} uploaded successfully`
+      );
+    }
+
+    if (failed.length > 0) {
+      const firstError = failed[0];
+      const message =
+        firstError.status === "rejected" && firstError.reason instanceof Error
+          ? firstError.reason.message
+          : "Unknown error";
+      toast.error(
+        `Failed to upload ${failed.length} file${failed.length > 1 ? "s" : ""}`,
+        { description: message }
+      );
     }
   };
 
