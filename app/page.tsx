@@ -29,8 +29,8 @@ const ImagesSkeleton = () => (
 
 const Home = () => (
   <UploadedImagesProvider>
-    <div className="container relative mx-auto grid grid-cols-[300px_1fr] items-start gap-16 py-8">
-      <div className="sticky top-8">
+    <div className="container relative mx-auto grid items-start gap-12 px-4 py-8 sm:gap-16 lg:grid-cols-[300px_1fr]">
+      <div className="lg:sticky lg:top-8">
         <Header />
       </div>
       <Suspense fallback={<ImagesSkeleton />}>

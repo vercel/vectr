@@ -2,7 +2,7 @@ import { CheckCircle2Icon, ImageUpIcon } from "lucide-react";
 import { DeployButton } from "./deploy";
 
 export const Header = () => (
-  <div className="flex flex-col gap-12">
+  <div className="flex flex-col gap-8 sm:gap-12">
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2">
         <ImageUpIcon className="size-4" />
@@ -13,25 +13,72 @@ export const Header = () => (
         on the AI Cloud.
       </p>
     </div>
-    <ul className="flex flex-col gap-4 text-muted-foreground">
-      <li className="flex gap-2">
-        <CheckCircle2Icon className="mt-0.5 size-4 shrink-0" />
-        <p className="text-sm">Uploads images to Vercel Blob Storage</p>
-      </li>
+    <ul className="flex flex-col gap-2 text-muted-foreground sm:gap-4">
       <li className="flex gap-2">
         <CheckCircle2Icon className="mt-0.5 size-4 shrink-0" />
         <p className="text-sm">
-          Generates descriptions using Grok 2 Vision AI through the AI SDK +
-          Gateway
+          Uploads images to{" "}
+          <a
+            className="underline"
+            href="https://vercel.com/storage"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            Vercel Blob Storage
+          </a>
         </p>
       </li>
       <li className="flex gap-2">
         <CheckCircle2Icon className="mt-0.5 size-4 shrink-0" />
-        <p className="text-sm">Indexes descriptions in Upstash Vector Search</p>
+        <p className="text-sm">
+          Generates descriptions using Grok 2 Vision AI through the{" "}
+          <a
+            className="underline"
+            href="https://ai-sdk.dev/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            AI SDK
+          </a>{" "}
+          +{" "}
+          <a
+            className="underline"
+            href="https://vercel.com/ai-gateway"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            Gateway
+          </a>
+        </p>
       </li>
       <li className="flex gap-2">
         <CheckCircle2Icon className="mt-0.5 size-4 shrink-0" />
-        <p className="text-sm">Uses Vercel Workflow for resilient processing</p>
+        <p className="text-sm">
+          Indexes descriptions in{" "}
+          <a
+            className="underline"
+            href="https://upstash.com/docs/search/overall/getstarted"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            Upstash Vector Search
+          </a>
+        </p>
+      </li>
+      <li className="flex gap-2">
+        <CheckCircle2Icon className="mt-0.5 size-4 shrink-0" />
+        <p className="text-sm">
+          Uses{" "}
+          <a
+            className="underline"
+            href="https://useworkflow.dev/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            Vercel Workflow
+          </a>{" "}
+          for resilient processing
+        </p>
       </li>
     </ul>
     <DeployButton />
