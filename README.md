@@ -6,10 +6,10 @@
 
 - 📤 **Drag-and-drop image uploads** with Vercel Blob Storage
 - 🤖 **AI-powered image descriptions** using Grok 2 Vision
-- 🔍 **Semantic search** with Upstash Vector Search
+- 🔍 **Semantic search** with Upstash Vector Search (stores metadata too!)
 - 🔄 **Resilient processing** with Vercel Workflow automatic retries
-- 🗄️ **PostgreSQL database** with Neon for image metadata
 - 🎨 **Beautiful UI** built with shadcn/ui and Tailwind CSS
+- 💰 **Incredibly cheap** - No database needed!
 
 ## 🚀 How It Works
 
@@ -17,45 +17,39 @@ When you upload an image, Vectr automatically:
 
 1. 💾 Stores the image in Vercel Blob Storage
 2. 🧠 Generates a detailed description using Grok 2 Vision AI
-3. 📊 Saves the image metadata to a PostgreSQL database
-4. 🔎 Indexes the description in Upstash for semantic search
+3. 🔎 Indexes the description AND metadata in Upstash for semantic search
 
 ```mermaid
 sequenceDiagram
     participant User
     participant App as Next.js App
-    participant Blob as Vercel Blob
     participant Workflow as Vercel Workflow
+    participant Blob as Vercel Blob
     participant AI as Grok Vision AI
-    participant DB as Neon PostgreSQL
     participant Search as Upstash Search
 
-    User->>App: Upload Image
-    App->>Blob: Store Image
-    Blob-->>App: Image URL
-    App->>Blob: Trigger Webhook
-
-    Blob->>Workflow: POST /api/process
+    User->>App: Upload Image (FormData)
+    App->>Workflow: POST /api/upload
 
     Note over Workflow: Start Workflow
 
-    Workflow->>AI: Generate Description (Step 1)
+    Workflow->>Blob: Upload to Storage (Step 1)
+    Note over Blob: Max 3 retries<br/>Rate limit handling
+    Blob-->>Workflow: Blob URL + Metadata
+
+    Workflow->>AI: Generate Description (Step 2)
     Note over AI: Max 5 retries<br/>Rate limit handling
     AI-->>Workflow: Image Description
 
-    Workflow->>DB: Insert Image Record (Step 2)
-    Note over DB: Max 3 retries<br/>Connection handling
-    DB-->>Workflow: Image ID
-
-    Workflow->>Search: Index Description (Step 3)
-    Note over Search: Max 5 retries<br/>Rate limit handling
+    Workflow->>Search: Index with Metadata (Step 3)
+    Note over Search: Max 5 retries<br/>Stores description + blob metadata
     Search-->>Workflow: Success
 
-    Workflow-->>Blob: 200 OK
+    Workflow-->>App: 200 OK
 
     User->>App: Search Images
     App->>Search: Semantic Query
-    Search-->>App: Matching Images
+    Search-->>App: Results with Metadata
     App-->>User: Display Results
 ```
 
@@ -65,20 +59,21 @@ sequenceDiagram
 
 Each step in the image processing workflow is isolated and runs on a separate serverless function with automatic retries:
 
-**Step 1: Generate Description** (`generate-description.ts`)
+**Step 1: Upload Image** (`upload-image.ts`)
+- 💾 Uploads to Vercel Blob Storage
+- ⏱️ Handles rate limiting with 1-minute retry delays
+- 🔄 Maximum 3 retry attempts
+- ❌ Fatal error on quota exceeded or invalid files
+
+**Step 2: Generate Description** (`generate-description.ts`)
 - 🤖 Uses Grok 2 Vision AI to analyze the image
 - ⏱️ Handles rate limiting with 5-minute retry delays
 - 🔄 Maximum 5 retry attempts
 - ❌ Fatal error on invalid/unsupported images
 
-**Step 2: Insert Image** (`insert-image.ts`)
-- 💾 Stores image metadata in PostgreSQL
-- 🔌 Handles connection issues with 30-second retry delays
-- 🔄 Maximum 3 retry attempts
-- ❌ Fatal error on constraint violations
-
 **Step 3: Index Image** (`index-image.ts`)
-- 🔎 Indexes description in Upstash Vector Search
+- 🔎 Indexes description AND blob metadata in Upstash
+- 💾 Stores all image data (url, size, contentType, etc.) as metadata
 - ⏱️ Handles rate limiting with 1-minute retry delays
 - 🔄 Maximum 5 retry attempts
 - ❌ Fatal error on invalid data
@@ -97,9 +92,8 @@ Vectr uses sophisticated error handling to ensure reliable processing:
 - ⚡ **Framework**: Next.js 15 with App Router and React 19
 - 🔄 **Workflow**: Vercel Workflow (alpha)
 - 🤖 **AI**: Grok 2 Vision via Vercel AI SDK
-- 🗄️ **Database**: Neon PostgreSQL with Drizzle ORM
-- 🔍 **Search**: Upstash Vector Search
-- 💾 **Storage**: Vercel Blob Storage
+- 🔍 **Search & Storage**: Upstash Vector Search (stores metadata too!)
+- 💾 **Blob Storage**: Vercel Blob Storage
 - 🎨 **UI**: shadcn/ui + Tailwind CSS 4
 - 🔒 **Type Safety**: TypeScript + Zod
 
@@ -107,15 +101,14 @@ Vectr uses sophisticated error handling to ensure reliable processing:
 
 The easiest way to deploy Vectr is using the Vercel Marketplace:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?demo-description=A+free%2C+open-source+template+for+building+natural+language+image+search+on+the+AI+Cloud.&demo-image=https%3A%2F%2Fvectr.store%2Fopengraph-image.png&demo-title=vectr.store&demo-url=https%3A%2F%2Fvectr.store%2F&from=templates&project-name=Vectr&repository-name=vectr&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fvectr&products=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22upstash-search%22%2C%22integrationSlug%22%3A%22upstash%22%7D%2C%7B%22type%22%3A%22blob%22%7D%5D&skippable-integrations=0)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?demo-description=A+free%2C+open-source+template+for+building+natural+language+image+search+on+the+AI+Cloud.&demo-image=https%3A%2F%2Fvectr.store%2Fopengraph-image.png&demo-title=vectr.store&demo-url=https%3A%2F%2Fvectr.store%2F&from=templates&project-name=Vectr&repository-name=vectr&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fvectr&products=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22upstash-search%22%2C%22integrationSlug%22%3A%22upstash%22%7D%2C%7B%22type%22%3A%22blob%22%7D%5D&skippable-integrations=0)
 
 During deployment, you'll be prompted to set up:
 
-1. 🗄️ **Neon PostgreSQL** - Serverless PostgreSQL database
-2. 🔍 **Upstash Vector Search** - Semantic search indexing
-3. 💾 **Vercel Blob Storage** - Image storage with webhooks
+1. 🔍 **Upstash Vector Search** - Semantic search + metadata storage
+2. 💾 **Vercel Blob Storage** - Image storage
 
-All services have generous free tiers and will be automatically configured.
+Both services have generous free tiers and will be automatically configured. No database needed!
 
 ## 💻 Local Development
 
@@ -144,9 +137,6 @@ pnpm install
 Create a `.env.local` file with:
 
 ```bash
-# Neon PostgreSQL
-DATABASE_URL="postgresql://..."
-
 # Upstash Search
 UPSTASH_SEARCH_URL="https://..."
 UPSTASH_SEARCH_TOKEN="..."
@@ -158,13 +148,7 @@ BLOB_READ_WRITE_TOKEN="..."
 XAI_API_KEY="..."
 ```
 
-4. Push the database schema:
-
-```bash
-pnpm db:push
-```
-
-5. Run the development server:
+4. Run the development server:
 
 ```bash
 pnpm dev
@@ -178,29 +162,28 @@ Open [http://localhost:3000](http://localhost:3000) to see your app.
 - 🏗️ `pnpm build` - Build for production
 - ✅ `pnpm check` - Run linting checks
 - ✨ `pnpm format` - Format code with Biome
-- 🗄️ `pnpm db:push` - Push database schema changes
 
 ## 📁 Project Structure
 
 ```
 vectr/
 ├── app/
+│   ├── actions/
+│   │   └── search.ts                 # Server action for search
 │   ├── api/
-│   │   └── process/
-│   │       ├── route.ts              # Main API route
-│   │       ├── process-blob.ts       # Workflow orchestration
-│   │       ├── generate-description.ts  # AI description step
-│   │       ├── insert-image.ts       # Database insertion step
-│   │       └── index-image.ts        # Search indexing step
+│   │   └── upload/
+│   │       ├── route.ts              # Workflow route handler
+│   │       ├── upload-image.ts       # Step 1: Upload to Blob
+│   │       ├── generate-description.ts  # Step 2: AI description
+│   │       └── index-image.ts        # Step 3: Index with metadata
 │   ├── layout.tsx
 │   └── page.tsx
 ├── components/
 │   ├── header.tsx
 │   ├── results.tsx
+│   ├── upload-button.tsx
 │   └── uploaded-images-provider.tsx
 ├── lib/
-│   ├── database.ts                   # Drizzle DB client
-│   ├── schema.ts                     # Database schema
 │   └── utils.ts
 └── package.json
 ```
@@ -209,7 +192,6 @@ vectr/
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `DATABASE_URL` | Neon PostgreSQL connection string | Yes |
 | `UPSTASH_SEARCH_URL` | Upstash Vector Search endpoint | Yes |
 | `UPSTASH_SEARCH_TOKEN` | Upstash authentication token | Yes |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob Storage token | Yes |

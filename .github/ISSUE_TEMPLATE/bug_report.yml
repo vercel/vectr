@@ -57,7 +57,8 @@ body:
         - Image Upload
         - AI Description Generation
         - Search Functionality
-        - Database/Storage
+        - Blob Storage
+        - Search Indexing
         - User Interface
         - Performance
         - Mobile Responsiveness

@@ -8,14 +8,13 @@ Thank you for your interest in contributing to Vectr! We're excited to have you 
 2. Clone your fork: `git clone https://github.com/your-username/vectr.git`
 3. Install dependencies: `pnpm install`
 4. Set up your environment variables (see [README.md](../README.md#setup))
-5. Push the database schema: `pnpm db:push`
-6. Create a new branch: `git checkout -b feature/your-feature-name`
-7. Make your changes
-8. Test your changes locally with `pnpm dev`
-9. Run linting and formatting: `pnpm check && pnpm format`
-10. Commit your changes with clear, descriptive commit messages
-11. Push to your fork
-12. Submit a Pull Request
+5. Create a new branch: `git checkout -b feature/your-feature-name`
+6. Make your changes
+7. Test your changes locally with `pnpm dev`
+8. Run linting and formatting: `pnpm check && pnpm format`
+9. Commit your changes with clear, descriptive commit messages
+10. Push to your fork
+11. Submit a Pull Request
 
 ## Development Workflow
 
@@ -30,9 +29,6 @@ pnpm check
 
 # Format code
 pnpm format
-
-# Push database schema changes
-pnpm db:push
 ```
 
 ### Testing Your Changes
@@ -88,14 +84,14 @@ If you're modifying workflow logic:
 - Include retry configuration: `functionName.maxRetries = N`
 - Use `getStepMetadata()` for attempt tracking and logging
 
-### Database Changes
+### Search Index Changes
 
-If you're modifying the database schema:
+If you're modifying how data is indexed in Upstash:
 
-1. Update `lib/schema.ts`
-2. Run `pnpm db:push` to push changes
-3. Test migrations locally
-4. Document any breaking changes in your PR
+1. Update `index-image.ts` to change metadata structure
+2. Test locally to ensure search results include all needed data
+3. Document any breaking changes in your PR
+4. Consider backward compatibility with existing indexed data
 
 ### UI Changes
 

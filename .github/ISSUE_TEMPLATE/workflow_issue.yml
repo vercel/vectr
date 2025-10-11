@@ -23,11 +23,11 @@ body:
       label: Which workflow step is affected?
       multiple: true
       options:
-        - Step 1 - Generate Description (AI)
-        - Step 2 - Insert Image (Database)
-        - Step 3 - Index Image (Search)
+        - Step 1 - Upload Image (Blob Storage)
+        - Step 2 - Generate Description (AI)
+        - Step 3 - Index Image (Search + Metadata)
         - Entire Workflow
-        - Webhook Trigger
+        - Route Handler
         - Unknown
     validations:
       required: true
