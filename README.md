@@ -227,14 +227,8 @@ All logs include timestamps, attempt counts, and duration metrics.
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to submit a Pull Request. Our [Contributing Guide](.github/CONTRIBUTING.md) has more information on how to get started.
 
 ## 📄 License
 
 MIT
-
-## 🙏 Acknowledgments
-
-- 🔄 Built with [Vercel Workflow](https://workflow-docs.vercel.sh)
-- 🎨 UI components from [shadcn/ui](https://ui.shadcn.com)
-- 🤖 Powered by [Grok Vision AI](https://x.ai)
