@@ -1,3 +1,5 @@
+/** biome-ignore-all lint/suspicious/noConsole: "Handy for debugging" */
+
 import { Search } from "@upstash/search";
 import type { PutBlobResult } from "@vercel/blob";
 import { type HandleUploadBody, handleUpload } from "@vercel/blob/client";
@@ -10,6 +12,8 @@ import { image } from "@/lib/schema";
 const upstash = Search.fromEnv();
 
 const insertImage = async (blob: PutBlobResult) => {
+  console.log("Inserting image...", blob.downloadUrl);
+
   const [record] = await database
     .insert(image)
     .values({
@@ -23,6 +27,8 @@ const insertImage = async (blob: PutBlobResult) => {
 };
 
 const generateDescription = async (blob: PutBlobResult) => {
+  console.log("Generating description...", blob.downloadUrl);
+
   const imagePart: ImagePart = {
     type: "image",
     image: blob.url,
@@ -44,29 +50,41 @@ const generateDescription = async (blob: PutBlobResult) => {
 };
 
 const indexImage = async (id: string, text: string) => {
+  console.log("Indexing image...", id, text);
   const index = upstash.index("images");
-  await index.upsert({ id, content: { text } });
+
+  return await index.upsert({ id, content: { text } });
 };
 
-const updateImage = async (id: string, text: string) =>
-  await database.update(image).set({ text }).where(eq(image.id, id));
+const updateImage = async (id: string, text: string) => {
+  console.log("Updating image...", id, text);
+  return await database.update(image).set({ text }).where(eq(image.id, id));
+};
 
 export async function POST(request: Request): Promise<NextResponse> {
   const body = (await request.json()) as HandleUploadBody;
+
+  console.log("Uploading blob...", body);
 
   try {
     const jsonResponse = await handleUpload({
       body,
       request,
-      onBeforeGenerateToken: async () => ({
-        allowedContentTypes: ["image/jpeg", "image/png", "image/webp"],
-        addRandomSuffix: true,
-        callbackUrl:
-          process.env.NODE_ENV === "production"
-            ? undefined
-            : "http://localhost:3000/api/upload",
-      }),
+      // biome-ignore lint/suspicious/useAwait: "onBeforeGenerateToken is async"
+      onBeforeGenerateToken: async () => {
+        console.log("Running onBeforeGenerateToken...");
+        return {
+          allowedContentTypes: ["image/jpeg", "image/png", "image/webp"],
+          addRandomSuffix: true,
+          callbackUrl:
+            process.env.NODE_ENV === "production"
+              ? undefined
+              : "http://localhost:3000/api/upload",
+        };
+      },
       onUploadCompleted: async ({ blob }) => {
+        console.log("Running onUploadCompleted...", blob.downloadUrl);
+
         try {
           const [record, text] = await Promise.all([
             insertImage(blob),
