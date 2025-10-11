@@ -113,20 +113,17 @@ export const UploadButton = () => {
           throw new Error(error.error);
         }
 
-        // Revoke temp URL on success
-        URL.revokeObjectURL(tempUrl);
-
         return { success: true, fileName: file.name };
       } catch (error) {
-        // Revoke temp URL on error
-        URL.revokeObjectURL(tempUrl);
-
         // Check if the error is due to abort
         if (error instanceof Error && error.name === "AbortError") {
           throw new Error("Upload cancelled");
         }
 
         throw error;
+      } finally {
+        // Revoke temp URL
+        URL.revokeObjectURL(tempUrl);
       }
     };
 
