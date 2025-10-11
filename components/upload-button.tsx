@@ -1,22 +1,24 @@
 "use client";
 
 import { upload } from "@vercel/blob/client";
-import { FileIcon, ImageIcon, UploadIcon } from "lucide-react";
-import type { ReactNode } from "react";
-import DropzoneComponent from "react-dropzone";
+import { ImageUpIcon } from "lucide-react";
+import { useRef } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { useUploadedImages } from "@/components/uploaded-images-provider";
 
-type DropzoneProps = {
-  children: ReactNode;
-};
-
-export const Dropzone = ({ children }: DropzoneProps) => {
+export const UploadButton = () => {
   const { addImage } = useUploadedImages();
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleDrop = async (acceptedFiles: File[]) => {
+  const handleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    if (files.length === 0) {
+      return;
+    }
+
     // Create temporary blobs for all files immediately for optimistic UI
-    const tempBlobs = acceptedFiles.map((file) => {
+    const tempBlobs = files.map((file) => {
       const tempUrl = URL.createObjectURL(file);
       return {
         file,
@@ -93,32 +95,32 @@ export const Dropzone = ({ children }: DropzoneProps) => {
         { description: message }
       );
     }
+
+    // Reset input
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
   };
 
   return (
-    <DropzoneComponent noClick noKeyboard onDrop={handleDrop}>
-      {({ getRootProps, getInputProps, isDragActive }) => (
-        <div {...getRootProps()} className="h-screen w-screen">
-          <input {...getInputProps()} />
-          {isDragActive && (
-            <div className="pointer-events-none fixed inset-0 flex select-none flex-col items-center justify-center gap-4 bg-black/50 text-white">
-              <div className="relative isolate flex">
-                <div className="-rotate-12 translate-x-2 translate-y-2 rounded-full border bg-background p-3 shadow-xs">
-                  <ImageIcon className="size-5 text-muted-foreground" />
-                </div>
-                <div className="z-10 rounded-full border bg-background p-3 shadow-xs">
-                  <UploadIcon className="size-5 text-muted-foreground" />
-                </div>
-                <div className="-translate-x-2 translate-y-2 rotate-12 rounded-full border bg-background p-3 shadow-xs">
-                  <FileIcon className="size-5 text-muted-foreground" />
-                </div>
-              </div>
-              <p className="font-medium text-lg">Drop the files here...</p>
-            </div>
-          )}
-          {children}
-        </div>
-      )}
-    </DropzoneComponent>
+    <>
+      <input
+        accept="image/*"
+        className="hidden"
+        id="upload-input"
+        multiple
+        onChange={handleChange}
+        ref={inputRef}
+        type="file"
+      />
+      <Button
+        className="rounded-full"
+        onClick={() => inputRef.current?.click()}
+        size="icon"
+        variant="ghost"
+      >
+        <ImageUpIcon className="size-4" />
+      </Button>
+    </>
   );
 };

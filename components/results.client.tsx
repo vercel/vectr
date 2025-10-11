@@ -3,6 +3,7 @@
 import type { ListBlobResult } from "@vercel/blob";
 import Image from "next/image";
 import { Input } from "./ui/input";
+import { UploadButton } from "./upload-button";
 import { useUploadedImages } from "./uploaded-images-provider";
 
 type ResultsClientProps = {
@@ -42,8 +43,9 @@ export const ResultsClient = ({ defaultData }: ResultsClientProps) => {
         ))}
       </div>
 
-      <div className="-translate-x-1/2 fixed bottom-8 left-1/2 w-full max-w-2xl rounded-full bg-background p-1">
+      <div className="-translate-x-1/2 fixed bottom-8 left-1/2 flex w-full max-w-2xl items-center gap-2 rounded-full bg-background p-1">
         <Input className="w-full" placeholder="Search" />
+        <UploadButton />
       </div>
     </>
   );

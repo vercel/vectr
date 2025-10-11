@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Dropzone } from "@/components/dropzone";
 import { Header } from "@/components/header";
 import { Results } from "@/components/results";
 import { UploadedImagesProvider } from "@/components/uploaded-images-provider";
@@ -30,14 +29,12 @@ const ImagesSkeleton = () => (
 
 const Home = () => (
   <UploadedImagesProvider>
-    <Dropzone>
-      <div className="container relative mx-auto grid max-w-5xl gap-4 py-8">
-        <Header />
-        <Suspense fallback={<ImagesSkeleton />}>
-          <Results />
-        </Suspense>
-      </div>
-    </Dropzone>
+    <div className="container relative mx-auto grid max-w-5xl gap-4 py-8">
+      <Header />
+      <Suspense fallback={<ImagesSkeleton />}>
+        <Results />
+      </Suspense>
+    </div>
   </UploadedImagesProvider>
 );
 
