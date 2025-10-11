@@ -44,7 +44,10 @@ export const ResultsClient = ({ defaultData }: ResultsClientProps) => {
       </div>
 
       <div className="-translate-x-1/2 fixed bottom-8 left-1/2 flex w-full max-w-2xl items-center gap-2 rounded-full bg-background p-1">
-        <Input className="w-full" placeholder="Search" />
+        <Input
+          className="w-full rounded-full border-none bg-secondary shadow-none outline-none"
+          placeholder="Search by description"
+        />
         <UploadButton />
       </div>
     </>
