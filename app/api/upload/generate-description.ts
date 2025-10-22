@@ -1,8 +1,8 @@
 /** biome-ignore-all lint/suspicious/noConsole: "Handy for debugging" */
 
 import type { PutBlobResult } from "@vercel/blob";
-import { FatalError, getStepMetadata, RetryableError } from "@vercel/workflow";
 import { generateText, type ImagePart } from "ai";
+import { FatalError, getStepMetadata, RetryableError } from "workflow";
 
 export const generateDescription = async (blob: PutBlobResult) => {
   "use step";

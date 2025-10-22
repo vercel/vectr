@@ -2,7 +2,7 @@
 
 import { Search } from "@upstash/search";
 import type { PutBlobResult } from "@vercel/blob";
-import { FatalError, getStepMetadata, RetryableError } from "@vercel/workflow";
+import { FatalError, getStepMetadata, RetryableError } from "workflow";
 
 const upstash = Search.fromEnv();
 

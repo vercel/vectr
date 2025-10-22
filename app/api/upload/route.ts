@@ -1,6 +1,6 @@
-import { FatalError } from "@vercel/workflow";
-import { start } from "@vercel/workflow/api";
 import { NextResponse } from "next/server";
+import { FatalError } from "workflow";
+import { start } from "workflow/api";
 import { processImage } from "./process-image";
 
 export const POST = async (request: Request): Promise<NextResponse> => {

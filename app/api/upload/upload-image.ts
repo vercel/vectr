@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/suspicious/noConsole: "Handy for debugging" */
 
 import { put } from "@vercel/blob";
-import { FatalError, getStepMetadata, RetryableError } from "@vercel/workflow";
+import { FatalError, getStepMetadata, RetryableError } from "workflow";
 
 type SerializableFile = {
   buffer: ArrayBuffer;
@@ -15,7 +15,10 @@ export const uploadImage = async (fileData: SerializableFile) => {
 
   const { attempt, stepStartedAt, stepId } = getStepMetadata();
 
-  console.log(`[${stepId}] Uploading image (attempt ${attempt})...`, fileData.name);
+  console.log(
+    `[${stepId}] Uploading image (attempt ${attempt})...`,
+    fileData.name
+  );
 
   try {
     const blob = await put(fileData.name, fileData.buffer, {

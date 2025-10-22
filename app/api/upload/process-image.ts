@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/suspicious/noConsole: "Handy for debugging" */
 
-import { FatalError } from "@vercel/workflow";
+import { FatalError } from "workflow";
 import { generateDescription } from "./generate-description";
 import { indexImage } from "./index-image";
 import { uploadImage } from "./upload-image";
