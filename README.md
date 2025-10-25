@@ -144,8 +144,8 @@ UPSTASH_SEARCH_TOKEN="..."
 # Vercel Blob
 BLOB_READ_WRITE_TOKEN="..."
 
-# AI Provider (Grok via Vercel AI SDK)
-XAI_API_KEY="..."
+# AI Gateway Key (only needed locally)
+AI_GATEWAY_API_KEY="..."
 ```
 
 4. Run the development server:
