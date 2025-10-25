@@ -97,7 +97,7 @@ export const ResultsClient = ({ defaultData }: ResultsClientProps) => {
 
       <form
         action={formAction}
-        className="-translate-x-1/2 fixed bottom-8 left-1/2 ml-[182px] flex w-full max-w-lg items-center gap-1 rounded-full bg-background p-1 shadow-xl"
+        className="-translate-x-1/2 fixed bottom-8 left-1/2 flex w-full max-w-sm items-center gap-1 rounded-full bg-background p-1 shadow-xl sm:max-w-lg lg:ml-[182px]"
       >
         {"data" in state && state.data.length > 0 && (
           <Button
